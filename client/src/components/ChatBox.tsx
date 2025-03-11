@@ -3,7 +3,7 @@ import '../styles/ChatBox.css';
 import { socket } from '../util/client';
 
 interface ChatBoxProps {
-
+	roomId: string | null;
 }
 
 interface ChatMessage {
@@ -16,18 +16,18 @@ interface Player {
 	name: string;
 }
 
-export default function ChatBox({ }: ChatBoxProps) {
+export default function ChatBox({ roomId }: ChatBoxProps) {
 
     const [chatLog, setChatLog] = useState<ChatMessage[]>([]);
     const [players, setPlayers] = useState<{ [key: string]: string }>({});
+
 	const id = socket.id || "";
 
     function sendMessage() {
         const input = document.querySelector('.ChatInput input') as HTMLInputElement;
         const message = input.value;
         input.value = '';
-        socket.emit('chatMessage', { roomId: 'someRoomId', message });
-        setChatLog((chatLog) => [...chatLog, { playerId: id, message }]);
+        socket.emit('chatMessage', { roomId, message });
     }
 
     // Listen for chat messages

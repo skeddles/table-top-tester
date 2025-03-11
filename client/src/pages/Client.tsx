@@ -11,17 +11,23 @@ interface ClientProps {
 export default function Client({}: ClientProps) {
 
 	const [connected, setConnected] = useState(false);
-	const [sessionId, setSessionId] = useState<null | string>(null);
+	const [roomId, setRoomId] = useState<null | string>(null);
 	const [playerId, setPlayerId] = useState<null | any>(null);
 
 	useEffect(() => {
 		function onConnect() {
 			console.log('Connected to server');
 			setConnected(true);
-			setSessionId("12345");
+			setRoomId("12345");
 			setPlayerId(socket.id);
 
-			socket.emit('createRoom');
+			// if there is a room id in the URL, join that room
+			const urlParams = new URLSearchParams(window.location.search);
+			const roomId = urlParams.get('room');
+			if (roomId)
+				socket.emit('joinRoom', roomId);
+			else
+				socket.emit('createRoom');
 		}
 
 		function onDisconnect() {
@@ -29,12 +35,35 @@ export default function Client({}: ClientProps) {
 			setConnected(false);
 		}
 
+		function onRoomCreated(roomId: string) {
+			console.log('Room created:', roomId);
+			setRoomId(roomId);
+			// update the URL with the room id
+			window.history.pushState({}, '', `?room=${roomId}`);
+		}
+
+		function onRoomJoined(roomId: string) {
+			console.log('Room joined:', roomId);
+			setRoomId(roomId);
+		}
+
+		function onRoomNotFound() {
+			console.log('Room not found');
+			alert('Room not found!');
+		}
+
 		socket.on('connect', onConnect);
 		socket.on('disconnect', onDisconnect);
+		socket.on('roomCreated', onRoomCreated);
+		socket.on('roomJoined', onRoomJoined);
+		socket.on('roomNotFound', onRoomNotFound);
 
 		return () => {
 			socket.off('connect', onConnect);
 			socket.off('disconnect', onDisconnect);
+			socket.off('roomCreated', onRoomCreated);
+			socket.off('roomJoined', onRoomJoined);
+			socket.off('roomNotFound', onRoomNotFound);
 		};
 	}, []);
 
@@ -48,7 +77,7 @@ export default function Client({}: ClientProps) {
 		{connected && <>
 			<div className="Header">
 				<h1>Tabletop Playtester</h1>
-				<p>Session ID: {sessionId}</p>
+				<p>Session ID: {roomId}</p>
 				<p>Player: {playerId}</p>
 			</div>
 
@@ -59,7 +88,7 @@ export default function Client({}: ClientProps) {
 				</div>
 
 				<div className="Sidebar">
-					<ChatBox />
+					<ChatBox roomId={roomId}/>
 				</div>
 
 			</div>

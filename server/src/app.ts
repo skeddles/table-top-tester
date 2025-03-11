@@ -56,16 +56,33 @@ io.on('connection', (socket) => {
 
     // Create a room
     socket.on('createRoom', () => {
+		const roomId = generateRandomRoomId();
 		const newRoom: Room = {
-			id: generateRandomRoomId(),
+			id: roomId,
 			players: [{ id: socket.id, name: 'Player 1' }]
 		};
-		ROOMS.set(socket.id, newRoom);
+		ROOMS.set(roomId, newRoom);
         socket.join(newRoom.id);
         console.log(`<${newRoom.id}>[${socket.id}] room created`);
         socket.emit('roomCreated', newRoom.id);
+		io.to(socket.id).emit('roomCreated', newRoom.id);
 		io.to(socket.id).emit('updatePlayersList', newRoom.players);
     });
+
+	socket.on('joinRoom', (roomId) => {
+		const room = ROOMS.get(roomId);
+		if (!room) {
+			socket.emit('roomNotFound');
+			console.log(`<${roomId}>[${socket.id}] room join failed`);
+			return;
+		}
+		room.players.push({ id: socket.id, name: 'Player '+ room.players.length });
+		ROOMS.set(socket.id, room);
+		socket.join(roomId);
+		console.log(`<${roomId}>[${socket.id}] room joined`);
+		io.to(socket.id).emit('roomJoined', roomId);
+		io.to(socket.id).emit('updatePlayersList', room.players);
+	});
 
     // Register player
     socket.on('registerPlayer', (name) => {
