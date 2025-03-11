@@ -2,6 +2,8 @@
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
 
 	.Header {
 		padding: 0.25em 0.5em;

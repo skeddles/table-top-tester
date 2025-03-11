@@ -3,6 +3,7 @@ import '../styles/Client.css';
 import { socket } from '../util/client';
 
 import ChatBox from '@/components/ChatBox';
+import Table from '@/components/Table';
 
 interface ClientProps {
 
@@ -123,7 +124,7 @@ export default function Client({}: ClientProps) {
 			<div className="Body">
 
 				<div className="Game">
-					<p>Game content goes here...</p>
+					<Table />
 				</div>
 
 				<div className="Sidebar">
