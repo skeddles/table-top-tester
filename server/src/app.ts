@@ -23,14 +23,29 @@ app.use(urlencoded({ extended: true }));
 // Set up routes
 setRoutes(app);
 
+interface Room {
+	id: string;
+	players: {
+		id: string;
+		name: string;
+	}[];
+}
+
+const ROOMS = new Map<string, Room>();
+
 // Socket.io setup for real-time updates
 io.on('connection', (socket) => {
-    console.log('A user connected');
+    console.log(`[${socket.id}] connected`);
 
     // Handle socket events here
 
     socket.on('disconnect', () => {
-        console.log('User disconnected');
+        console.log(`[${socket.id}] disconnected`);
+        // Remove player from the list
+		const room = ROOMS.get(socket.id);
+		if (!room) return;
+		room.players = room.players.filter(player => player.id !== socket.id);
+		ROOMS.set(socket.id, room);
     });
 
     // Join a room
@@ -41,17 +56,33 @@ io.on('connection', (socket) => {
 
     // Create a room
     socket.on('createRoom', () => {
-        const roomId = generateRandomRoomId();
-        socket.join(roomId);
-        console.log(`Room created and user joined room: ${roomId}`);
-        socket.emit('roomCreated', roomId);
+		const newRoom: Room = {
+			id: generateRandomRoomId(),
+			players: [{ id: socket.id, name: 'Player 1' }]
+		};
+		ROOMS.set(socket.id, newRoom);
+        socket.join(newRoom.id);
+        console.log(`<${newRoom.id}>[${socket.id}] room created`);
+        socket.emit('roomCreated', newRoom.id);
+		io.to(socket.id).emit('updatePlayersList', newRoom.players);
+    });
+
+    // Register player
+    socket.on('registerPlayer', (name) => {
+		const room = ROOMS.get(socket.id);
+		if (!room) return;
+        room.players.push({ id: socket.id, name: 'Player '+ room.players.length });
+        console.log(`<${socket.id}>[${socket.id}] player registered`);
+
+		// Send the player list to all players in the room
+		io.to(socket.id).emit('updatePlayersList', room.players);
     });
 
     // Receive chat messages and emit to the same room
     socket.on('chatMessage', (data) => {
         const { roomId, message } = data;
-        console.log(`Chat message received in room ${roomId}: ${message}`);
-        io.to(roomId).emit('chatMessage', message);
+        console.log(`<${roomId}>[${socket.id}] message: ${message}`);
+        io.to(roomId).emit('chatMessage', { playerId: socket.id, message });
     });
 });
 

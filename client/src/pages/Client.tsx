@@ -12,12 +12,16 @@ export default function Client({}: ClientProps) {
 
 	const [connected, setConnected] = useState(false);
 	const [sessionId, setSessionId] = useState<null | string>(null);
+	const [playerId, setPlayerId] = useState<null | any>(null);
 
 	useEffect(() => {
 		function onConnect() {
 			console.log('Connected to server');
 			setConnected(true);
 			setSessionId("12345");
+			setPlayerId(socket.id);
+
+			socket.emit('createRoom');
 		}
 
 		function onDisconnect() {
@@ -45,6 +49,7 @@ export default function Client({}: ClientProps) {
 			<div className="Header">
 				<h1>Tabletop Playtester</h1>
 				<p>Session ID: {sessionId}</p>
+				<p>Player: {playerId}</p>
 			</div>
 
 			<div className="Body">
@@ -54,7 +59,6 @@ export default function Client({}: ClientProps) {
 				</div>
 
 				<div className="Sidebar">
-					<p>Sidebar content goes here...</p>
 					<ChatBox />
 				</div>
 

@@ -6,40 +6,66 @@ interface ChatBoxProps {
 
 }
 
-export default function ChatBox({}: ChatBoxProps) {
+interface ChatMessage {
+    playerId: string;
+    message: string;
+}
 
-	const [chatLog, setChatLog] = useState<string[]>([]);
+interface Player {
+	id: string;
+	name: string;
+}
 
-	function sendMessage() {
-		const input = document.querySelector('.ChatInput input') as HTMLInputElement;
-		const message = input.value;
-		input.value = '';
-		socket.emit('chatMessage', message);
-		setChatLog((chatLog) => [...chatLog, message]);
-	}
+export default function ChatBox({ }: ChatBoxProps) {
 
-	// Listen for chat messages
-	useEffect(() => {
-		function onChatMessage(message: string) {
-			console.log('Chat message received:', message);
-			setChatLog((chatLog) => [...chatLog, message]);
+    const [chatLog, setChatLog] = useState<ChatMessage[]>([]);
+    const [players, setPlayers] = useState<{ [key: string]: string }>({});
+	const id = socket.id || "";
+
+    function sendMessage() {
+        const input = document.querySelector('.ChatInput input') as HTMLInputElement;
+        const message = input.value;
+        input.value = '';
+        socket.emit('chatMessage', { roomId: 'someRoomId', message });
+        setChatLog((chatLog) => [...chatLog, { playerId: id, message }]);
+    }
+
+    // Listen for chat messages
+    useEffect(() => {
+        function onChatMessage(data: ChatMessage) {
+            console.log('Chat message received:', data);
+            setChatLog((chatLog) => [...chatLog, data]);
+        }
+
+		function onUpdatePlayersList (players: Player[]) {
+			console.log('Players list updated:', players);
+            setPlayers(players.reduce((acc: { [key: string]: string }, player) => {
+				acc[player.id] = player.name;
+				return acc;
+			}, {}));
 		}
 
-		socket.on('chatMessage', onChatMessage);
+        socket.on('chatMessage', onChatMessage);
+		socket.on('updatePlayersList', onUpdatePlayersList);
 
-		return () => {
-			socket.off('chatMessage', onChatMessage);
-		};
-	}, []);
+        return () => {
+            socket.off('chatMessage', onChatMessage);
+			socket.off('updatePlayersList', onUpdatePlayersList);
+        };
+    }, []);
 
-	return (<div className="ChatBox">
-		<h1>Chat</h1>
-		<div className="ChatLog">
-			{chatLog.map((message, index) => <div key={index}>{message}</div>)}
-		</div>
-		<div className="ChatInput">
-			<input type="text" />
-			<button onClick={sendMessage}>Send</button>
-		</div>
-	</div>);
+    return (<div className="ChatBox">
+        <h1>Chat</h1>
+        <div className="ChatLog">
+            {chatLog.map((chat, index) => (
+                <div key={index}>
+                    <strong>{players[chat.playerId] || 'Unknown'}:</strong> {chat.message}
+                </div>
+            ))}
+        </div>
+        <div className="ChatInput">
+            <input type="text" />
+            <button onClick={sendMessage}>Send</button>
+        </div>
+    </div>);
 }
