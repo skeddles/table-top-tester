@@ -17,3 +17,24 @@ body {
 strong, h1, h2, h3, h4, h5, h6 {
 	font-weight: 600;
 }
+
+
+button {
+	padding: 0.5em 1em;
+	font-size: 1em;
+	background-color: #a16428;
+	color: #ffdf8d;
+	border: none;
+	border-radius: 0.5em;
+	cursor: pointer;
+	outline: none;
+	font-weight: 600;
+	text-transform: uppercase;
+	margin: 0.5em;
+	transition: background-color 0.2s, transform 0.2s;
+
+	&:hover {
+		background-color: #c98037;
+		transform: scale(1.05);
+	}
+}

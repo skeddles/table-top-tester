@@ -43,17 +43,5 @@
 			outline: none;
 		}
 
-		button {
-			padding: 0.5em 1em;
-			font-size: 1em;
-			background-color: #a16428;
-			color: #ffdf8d;
-			border: none;
-			border-radius: 0.5em;
-			cursor: pointer;
-			outline: none;
-			font-weight: 600;
-			text-transform: uppercase;
-		}
 	}
 }
