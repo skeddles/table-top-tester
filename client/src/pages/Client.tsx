@@ -8,11 +8,18 @@ interface ClientProps {
 
 }
 
+
+interface Player {
+	id: string;
+	name: string;
+}
+
 export default function Client({}: ClientProps) {
 
 	const [connected, setConnected] = useState(false);
 	const [roomId, setRoomId] = useState<null | string>(null);
 	const [playerId, setPlayerId] = useState<null | any>(null);
+	const [players, setPlayers] = useState<{ [key: string]: string }>({});
 
 	useEffect(() => {
 		function onConnect() {
@@ -52,11 +59,20 @@ export default function Client({}: ClientProps) {
 			alert('Room not found!');
 		}
 
+		function onUpdatePlayersList (players: Player[]) {
+			console.log('Players list updated:', players);
+            setPlayers(players.reduce((acc: { [key: string]: string }, player) => {
+				acc[player.id] = player.name;
+				return acc;
+			}, {}));
+		}
+
 		socket.on('connect', onConnect);
 		socket.on('disconnect', onDisconnect);
 		socket.on('roomCreated', onRoomCreated);
 		socket.on('roomJoined', onRoomJoined);
 		socket.on('roomNotFound', onRoomNotFound);
+		socket.on('updatePlayersList', onUpdatePlayersList);
 
 		return () => {
 			socket.off('connect', onConnect);
@@ -64,6 +80,7 @@ export default function Client({}: ClientProps) {
 			socket.off('roomCreated', onRoomCreated);
 			socket.off('roomJoined', onRoomJoined);
 			socket.off('roomNotFound', onRoomNotFound);
+			socket.off('updatePlayersList', onUpdatePlayersList);
 		};
 	}, []);
 
@@ -78,7 +95,8 @@ export default function Client({}: ClientProps) {
 			<div className="Header">
 				<h1>Tabletop Playtester</h1>
 				<p>Session ID: {roomId}</p>
-				<p>Player: {playerId}</p>
+				<p>Player: {players[playerId]} ({playerId})</p>
+				<p>Players: {Object.values(players).join(', ')}</p>
 			</div>
 
 			<div className="Body">
@@ -88,7 +106,7 @@ export default function Client({}: ClientProps) {
 				</div>
 
 				<div className="Sidebar">
-					<ChatBox roomId={roomId}/>
+					<ChatBox roomId={roomId} players={players}/>
 				</div>
 
 			</div>

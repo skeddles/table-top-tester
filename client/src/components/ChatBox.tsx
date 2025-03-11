@@ -4,6 +4,7 @@ import { socket } from '../util/client';
 
 interface ChatBoxProps {
 	roomId: string | null;
+	players: { [key: string]: string };
 }
 
 interface ChatMessage {
@@ -11,15 +12,11 @@ interface ChatMessage {
     message: string;
 }
 
-interface Player {
-	id: string;
-	name: string;
-}
 
-export default function ChatBox({ roomId }: ChatBoxProps) {
+export default function ChatBox({ roomId, players }: ChatBoxProps) {
 
     const [chatLog, setChatLog] = useState<ChatMessage[]>([]);
-    const [players, setPlayers] = useState<{ [key: string]: string }>({});
+   
 
 	const id = socket.id || "";
 
@@ -37,20 +34,14 @@ export default function ChatBox({ roomId }: ChatBoxProps) {
             setChatLog((chatLog) => [...chatLog, data]);
         }
 
-		function onUpdatePlayersList (players: Player[]) {
-			console.log('Players list updated:', players);
-            setPlayers(players.reduce((acc: { [key: string]: string }, player) => {
-				acc[player.id] = player.name;
-				return acc;
-			}, {}));
-		}
+
 
         socket.on('chatMessage', onChatMessage);
-		socket.on('updatePlayersList', onUpdatePlayersList);
+
 
         return () => {
             socket.off('chatMessage', onChatMessage);
-			socket.off('updatePlayersList', onUpdatePlayersList);
+			
         };
     }, []);
 
