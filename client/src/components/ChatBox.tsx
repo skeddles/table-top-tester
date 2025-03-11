@@ -34,14 +34,17 @@ export default function ChatBox({ roomId, players }: ChatBoxProps) {
             setChatLog((chatLog) => [...chatLog, data]);
         }
 
-
+		function onRoomJoined({chat}: {chat: ChatMessage[]}) {
+			console.log('Got chat history', chat);
+			setChatLog(chat);
+		}
 
         socket.on('chatMessage', onChatMessage);
-
+		socket.on('roomJoined', onRoomJoined);
 
         return () => {
             socket.off('chatMessage', onChatMessage);
-			
+			socket.off('roomJoined', onRoomJoined);
         };
     }, []);
 

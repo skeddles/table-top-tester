@@ -29,6 +29,10 @@ interface Room {
 		id: string;
 		name: string;
 	}[];
+	chat: {
+		playerId?: string;
+		message: string;
+	}[];
 }
 
 const ROOMS = new Map<string, Room>();
@@ -60,7 +64,8 @@ io.on('connection', (socket) => {
 		const name = 'Player 1';
 		const newRoom: Room = {
 			id: roomId,
-			players: [{ id: socket.id, name }]
+			players: [{ id: socket.id, name }],
+			chat: []
 		};
 		ROOMS.set(roomId, newRoom);
         socket.join(newRoom.id);
@@ -83,7 +88,7 @@ io.on('connection', (socket) => {
 		ROOMS.set(socket.id, room);
 		socket.join(roomId);
 		console.log(`<${roomId}>[${socket.id}] room joined`);
-		io.to(roomId).emit('roomJoined', roomId);
+		io.to(roomId).emit('roomJoined', {roomId, chat: room.chat});
 		io.to(roomId).emit('updatePlayersList', room.players);
 		io.to(roomId).emit('chatMessage', { message: name + ' joined the room' });
 	});
@@ -93,6 +98,12 @@ io.on('connection', (socket) => {
         const { roomId, message } = data;
         console.log(`<${roomId}>[${socket.id}] message: ${message}`);
         io.to(roomId).emit('chatMessage', { playerId: socket.id, message });
+
+		//add chat message to room
+		const room = ROOMS.get(roomId);
+		if (!room) return;
+		room.chat.push({ playerId: socket.id, message });
+		ROOMS.set(roomId, room);
     });
 });
 

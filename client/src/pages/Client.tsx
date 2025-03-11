@@ -52,7 +52,7 @@ export default function Client({}: ClientProps) {
 			setConnectionState('connected');
 		}
 
-		function onRoomJoined(roomId: string) {
+		function onRoomJoined({roomId}: {roomId: string}) {
 			console.log('Room joined:', roomId);
 			setConnectionState('connected');
 			setRoomId(roomId);
