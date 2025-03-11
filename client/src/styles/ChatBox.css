@@ -17,13 +17,18 @@
 
 			strong {
 				color: #a16428;
+
+			}
+
+			i {
+				font-style: italic;
+				color: #a16428;
 			}
 		}
 	}
 
 	.ChatInput {
 		padding: 0.5em 0;
-
 		display: flex;
 
 		input, input:focus, input:active {

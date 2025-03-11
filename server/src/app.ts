@@ -57,9 +57,10 @@ io.on('connection', (socket) => {
     // Create a room
     socket.on('createRoom', () => {
 		const roomId = generateRandomRoomId();
+		const name = 'Player 1';
 		const newRoom: Room = {
 			id: roomId,
-			players: [{ id: socket.id, name: 'Player 1' }]
+			players: [{ id: socket.id, name }]
 		};
 		ROOMS.set(roomId, newRoom);
         socket.join(newRoom.id);
@@ -67,6 +68,7 @@ io.on('connection', (socket) => {
         socket.emit('roomCreated', newRoom.id);
 		io.to(socket.id).emit('roomCreated', newRoom.id);
 		io.to(socket.id).emit('updatePlayersList', newRoom.players);
+		io.to(roomId).emit('chatMessage', { message: name + ' created the room' });
     });
 
 	socket.on('joinRoom', (roomId) => {
@@ -76,24 +78,15 @@ io.on('connection', (socket) => {
 			console.log(`<${roomId}>[${socket.id}] room join failed`);
 			return;
 		}
-		room.players.push({ id: socket.id, name: 'Player '+ room.players.length });
+		const name = 'Player '+ (room.players.length+1);
+		room.players.push({ id: socket.id, name });
 		ROOMS.set(socket.id, room);
 		socket.join(roomId);
 		console.log(`<${roomId}>[${socket.id}] room joined`);
-		io.to(socket.id).emit('roomJoined', roomId);
-		io.to(socket.id).emit('updatePlayersList', room.players);
+		io.to(roomId).emit('roomJoined', roomId);
+		io.to(roomId).emit('updatePlayersList', room.players);
+		io.to(roomId).emit('chatMessage', { message: name + ' joined the room' });
 	});
-
-    // Register player
-    socket.on('registerPlayer', (name) => {
-		const room = ROOMS.get(socket.id);
-		if (!room) return;
-        room.players.push({ id: socket.id, name: 'Player '+ room.players.length });
-        console.log(`<${socket.id}>[${socket.id}] player registered`);
-
-		// Send the player list to all players in the room
-		io.to(socket.id).emit('updatePlayersList', room.players);
-    });
 
     // Receive chat messages and emit to the same room
     socket.on('chatMessage', (data) => {

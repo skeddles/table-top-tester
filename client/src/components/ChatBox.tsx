@@ -59,7 +59,11 @@ export default function ChatBox({ roomId }: ChatBoxProps) {
         <div className="ChatLog">
             {chatLog.map((chat, index) => (
                 <div key={index}>
-                    <strong>{players[chat.playerId] || 'Unknown'}:</strong> {chat.message}
+					{chat.playerId ? 
+                    	<><strong>{players[chat.playerId] || 'Unknown'}:</strong> {chat.message}</>
+					:
+						<i>{chat.message}</i>
+					}
                 </div>
             ))}
         </div>
