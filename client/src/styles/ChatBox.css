@@ -6,6 +6,49 @@
 	.ChatLog {
 		flex-grow: 1;
 		overflow-y: auto;
-		
+		display: flex;
+		justify-content: flex-end;
+		flex-direction: column;
+
+		div {
+			word-wrap: break-word;
+			word-break: break-all;
+			padding: 0.5em 0;
+
+			strong {
+				color: #a16428;
+			}
+		}
+	}
+
+	.ChatInput {
+		padding: 0.5em 0;
+
+		display: flex;
+
+		input, input:focus, input:active {
+			flex-grow: 1;
+			padding: 0.5em;
+			font-size: 1em;
+			background-color: rgba(255, 255, 255, 0.1);
+			color: #cfb26b;
+			border: none;
+			border-radius: 0.5em;
+			margin-right: 0.5em;
+			outline: none;
+		}
+
+		button {
+			padding: 0.5em 1em;
+			font-size: 1em;
+			background-color: #a16428;
+			color: #ffdf8d;
+			border: none;
+			border-radius: 0.5em;
+			cursor: pointer;
+			outline: none;
+			font-weight: 600;
+			text-transform: uppercase;
+		}
 	}
 }

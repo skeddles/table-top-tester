@@ -4,7 +4,9 @@ body {
     margin: 0;
     background-color: #191313;
     color: #cfb26b;
+}
 
+* {
 	font-family: "Fredoka", sans-serif;
 	font-optical-sizing: auto;
 	font-weight: 400;
