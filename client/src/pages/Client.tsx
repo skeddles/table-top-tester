@@ -124,7 +124,7 @@ export default function Client({}: ClientProps) {
 			<div className="Body">
 
 				<div className="Game">
-					<Table />
+					<Table roomId={roomId} />
 				</div>
 
 				<div className="Sidebar">

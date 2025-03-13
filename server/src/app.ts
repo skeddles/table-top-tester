@@ -105,6 +105,12 @@ io.on('connection', (socket) => {
 		room.chat.push({ playerId: socket.id, message });
 		ROOMS.set(roomId, room);
     });
+
+	socket.on('addPiece', ({ roomId }) => {
+		console.log(`<${roomId}>[${socket.id}] added piece`);
+
+		io.to(roomId).emit('pieceAdded', { type: 'card', x: 0, y: 0 });
+	});
 });
 
 // Start the server
